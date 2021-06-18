@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration debug="false" scan="true" scanPeriod="30 seconds">
+  <springProfile name="test,prod">
+    <!-- 输出到文件 常规 -->
+    <appender name="DEFAULT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+      <file>${logging.file.path}/${spring.application.name}/${logging.name.default}.log</file>
+    </appender>
+</configuration>

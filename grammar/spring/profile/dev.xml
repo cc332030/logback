@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration debug="false" scan="true" scanPeriod="30 seconds">
+  <springProfile name="dev">
+    <!-- 表示控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    </appender>
+  </springProfile>
+</configuration>

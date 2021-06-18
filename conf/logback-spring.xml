@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration debug="false" scan="true" scanPeriod="30 seconds">
+
+  <contextName>${spring.application.name}-logback</contextName>
+
+  <springProperty scope="context" name="spring.application.name" source="spring.application.name"/>
+
+  <springProperty scope="context" name="logging.file.path" source="logging.file.path"/>
+  <springProperty scope="context" name="logging.file.max-size" source="logging.file.max-size"/>
+
+  <property name="logging.pattern" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{128} - %msg%n" />
+  <property name="logging.charset" value="utf-8" />
+
+  <property name="logging.name.default" value="default" />
+  <property name="logging.name.error" value="error" />
+
+  <springProfile name="dev">
+    <!-- 表示控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+
+      <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+        <level>${logging.level.root}</level>
+      </filter>
+
+      <encoder>
+        <pattern>${logging.pattern}</pattern>
+        <charset>${logging.charset}</charset>
+      </encoder>
+    </appender>
+  </springProfile>
+
+  <springProfile name="test,prod">
+    <!-- 输出到文件 常规 -->
+    <appender name="DEFAULT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+      <file>${logging.file.path}/${spring.application.name}/${logging.name.default}.log</file>
+
+      <!-- 过滤低于此级别的记录 -->
+      <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+        <level>${logging.level.root}</level>
+      </filter>
+
+      <encoder>
+        <pattern>${logging.pattern}</pattern>
+        <charset>${logging.charset}</charset>
+      </encoder>
+
+      <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+
+        <fileNamePattern>${logging.file.path}/${logging.name.default}-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+        <maxHistory>${logging.file.max-history}</maxHistory>
+
+        <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+          <maxFileSize>${logging.file.max-size}</maxFileSize>
+        </timeBasedFileNamingAndTriggeringPolicy>
+
+      </rollingPolicy>
+
+    </appender>
+
+    <!-- 异步日志 -->
+    <appender name="DEFAULT_FILE_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+      <!-- 设置为不丢失日志,默认如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+      <discardingThreshold >0</discardingThreshold>
+      <!-- 更改默认的队列的深度,默认值为256 -->
+      <queueSize>1000</queueSize>
+      <appender-ref ref ="DEFAULT_FILE"/>
+    </appender>
+
+
+    <!-- 输出到文件 ERROR -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+      <file>${logging.file.path}/${spring.application.name}/${logging.name.error}.log</file>
+
+      <!-- 只记录此级别的日志 -->
+      <filter class="ch.qos.logback.classic.filter.LevelFilter">
+        <level>ERROR</level>
+        <onMatch>ACCEPT</onMatch>
+        <onMismatch>DENY</onMismatch>
+      </filter>
+
+      <encoder>
+        <pattern>${logging.pattern}</pattern>
+        <charset>utf8</charset>
+      </encoder>
+
+      <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+
+        <fileNamePattern>${logging.file.path}/${logging.name.error}-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+        <maxHistory>${logging.file.max-history}</maxHistory>
+
+        <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+          <maxFileSize>${logging.file.max-size}</maxFileSize>
+        </timeBasedFileNamingAndTriggeringPolicy>
+
+      </rollingPolicy>
+
+    </appender>
+
+    <!-- 异步日志 -->
+    <appender name="ERROR_FILE_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+      <!-- 设置为不丢失日志,默认如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+      <discardingThreshold >0</discardingThreshold>
+      <!-- 更改默认的队列的深度,默认值为256 -->
+      <queueSize>1000</queueSize>
+      <appender-ref ref ="ERROR_FILE"/>
+    </appender>
+  </springProfile>
+
+  <logger name="org.springframework.boot.autoconfigure" level="info" />
+  <logger name="io.netty" level="info" />
+
+  <!-- additivity 不能在这用 -->
+  <!--<root level="${logging.level.root}">-->
+  <!--  <appender-ref ref="DEFAULT_FILE_ASYNC"/>-->
+  <!--  <appender-ref ref="ERROR_FILE_ASYNC"/>-->
+  <!--</root>-->
+
+  <springProfile name="default,dev">
+    <root level="${logging.level.root}">
+      <appender-ref ref="STDOUT" />
+    </root>
+  </springProfile>
+
+  <springProfile name="test">
+    <root level="${logging.level.root}">
+      <appender-ref ref="DEFAULT_FILE_ASYNC"/>
+      <appender-ref ref="ERROR_FILE_ASYNC"/>
+    </root>
+  </springProfile>
+
+  <springProfile name="proc">
+    <root level="${logging.level.root}">
+      <appender-ref ref="DEFAULT_FILE_ASYNC"/>
+      <appender-ref ref="ERROR_FILE_ASYNC"/>
+    </root>
+  </springProfile>
+
+
+
+</configuration>
